@@ -5,8 +5,7 @@
   "repository": "https://github.com/heroku/active_storage_with_previews_example",
   "keywords": ["ruby", "rails" ],
   "addons": [
-    "heroku-postgresql",
-    "bucketeer:hobbyist"
+    "heroku-postgresql"
   ],
   "buildpacks": [
     {
