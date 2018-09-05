@@ -122,6 +122,8 @@ Rails.application.config.to_prepare do
     end
   end
 
+  Rails.configuration.cloudfront_host = ENV["CLOUDFRONT_HOST"]
+
   if defined?(ActiveStorage::Service::S3Service)
     # from activestorage/lib/active_storage/service/s3_service.rb
     ActiveStorage::Service::S3Service.class_eval do
@@ -138,10 +140,22 @@ Rails.application.config.to_prepare do
         end
       end
 
+      def cloudfront_host
+        @cloudflront_host ||= Rails.configuration.cloudfront_host
+      end
+
+      def proxy_url(url)
+        return url unless cloudfront_host
+        uri = URI(url)
+        uri.host = cloudfront_host
+        uri.path.gsub!("/#{bucket.name}","")
+        uri.to_s
+      end
+
       def url(key, expires_in:, filename:, disposition:, content_type:)
         instrument :url, key: key, expires_in: expires_in do |payload|
           generated_url = if expires_in == false
-                            object_for(key).public_url
+                            proxy_url object_for(key).public_url
                           else
                             object_for(key).presigned_url :get,
                                                           expires_in: expires_in.to_i,
